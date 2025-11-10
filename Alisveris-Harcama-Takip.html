@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alışveriş ve Harcama Takip Sistemi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #653a8f 100%);
+        }
+        .list-group-item {
+            border-radius: 10px !important;
+            margin-bottom: 10px;
+            border: 1px solid #e0e0e0;
+        }
+        .badge {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+        .total-amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+        }
+        .main-container {
+            display: none;
+        }
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+        }
+        .product-info {
+            flex: 1;
+        }
+        .product-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .daily-expense-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            margin-bottom: 8px;
+        }
+        .daily-expense-date {
+            font-weight: 600;
+            color: #495057;
+        }
+        .daily-expense-amount {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .daily-expense-count {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login/Register Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3><i class="bi bi-cart-check"></i> Alışveriş Takip Sistemi</h3>
+            </div>
+            <div class="card-body p-4">
+                <ul class="nav nav-tabs mb-3" id="authTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab">Giriş Yap</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab">Kayıt Ol</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="authTabContent">
+                    <!-- Login Tab -->
+                    <div class="tab-pane fade show active" id="login" role="tabpanel">
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label for="loginUsername" class="form-label">Kullanıcı Adı</label>
+                                <input type="text" class="form-control" id="loginUsername" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="loginPassword" class="form-label">Şifre</label>
+                                <input type="password" class="form-control" id="loginPassword" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Giriş Yap</button>
+                        </form>
+                        <div id="loginError" class="alert alert-danger mt-3" style="display: none;"></div>
+                        <div class="mt-3 text-center">
+                            <small class="text-muted">
+                                <a href="#" id="clearStorageLink" class="text-danger" style="text-decoration: none; font-size: 0.85rem;">
+                                    LocalStorage'ı Temizle (Test)
+                                </a>
+                            </small>
+                        </div>
+                    </div>
+                    <!-- Register Tab -->
+                    <div class="tab-pane fade" id="register" role="tabpanel">
+                        <form id="registerForm">
+                            <div class="mb-3">
+                                <label for="registerUsername" class="form-label">Kullanıcı Adı</label>
+                                <input type="text" class="form-control" id="registerUsername" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="registerPassword" class="form-label">Şifre</label>
+                                <input type="password" class="form-control" id="registerPassword" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Kayıt Ol ve Giriş Yap</button>
+                        </form>
+                        <div id="registerError" class="alert alert-danger mt-3" style="display: none;"></div>
+                        <div id="registerSuccess" class="alert alert-success mt-3" style="display: none;">Kayıt başarılı! Giriş yapabilirsiniz.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application Screen -->
+    <div id="mainScreen" class="main-container container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="bi bi-person-circle"></i> Hoş Geldiniz, <span id="currentUsername"></span></h4>
+                        <button class="btn btn-light btn-sm" id="logoutBtn">
+                            <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Product Form -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Yeni Ürün Ekle</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="addProductForm">
+                            <div class="mb-3">
+                                <label for="productName" class="form-label">Ürün Adı</label>
+                                <input type="text" class="form-control" id="productName" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-lg"></i> Ürün Ekle
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Alınacaklar Listesi -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-list-check"></i> Alınacaklar</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="pendingList" class="list-group">
+                            <!-- Pending items will be added here -->
+                        </div>
+                        <div id="emptyPending" class="text-center text-muted mt-3" style="display: none;">
+                            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                            <p>Alınacak ürün yok</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alınmışlar Listesi -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-check-circle"></i> Alınmışlar</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="completedList" class="list-group">
+                            <!-- Completed items will be added here -->
+                        </div>
+                        <div id="emptyCompleted" class="text-center text-muted mt-3" style="display: none;">
+                            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                            <p>Alınmış ürün yok</p>
+                        </div>
+                        <div class="mt-4 p-3 bg-light rounded">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="fw-bold">Toplam Harcama:</span>
+                                <span class="total-amount" id="totalAmount">0.00 ₺</span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h6 class="mb-3"><i class="bi bi-calendar-check"></i> Günlük Harcama Özeti</h6>
+                            <div id="dailyExpenses" class="list-group">
+                                <!-- Daily expenses will be added here -->
+                            </div>
+                            <div id="emptyDailyExpenses" class="text-center text-muted mt-3" style="display: none;">
+                                <small>Henüz günlük harcama kaydı yok</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Application State
+        let currentUser = null;
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+            setupEventListeners();
+        });
+
+        // Check if user is logged in
+        function checkLoginStatus() {
+            const loggedInUser = localStorage.getItem('currentUser');
+            if (loggedInUser) {
+                currentUser = loggedInUser;
+                showMainScreen();
+                loadUserData();
+            } else {
+                showLoginScreen();
+            }
+        }
+
+        // Show login screen
+        function showLoginScreen() {
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('mainScreen').style.display = 'none';
+        }
+
+        // Show main screen
+        function showMainScreen() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainScreen').style.display = 'block';
+            document.getElementById('currentUsername').textContent = currentUser;
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Login form
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            
+            // Register form
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+            
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+            
+            // Add product form
+            document.getElementById('addProductForm').addEventListener('submit', handleAddProduct);
+            
+            // Clear storage link
+            document.getElementById('clearStorageLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (confirm('Tüm kullanıcı verilerini silmek istediğinize emin misiniz? Bu işlem geri alınamaz!')) {
+                    localStorage.clear();
+                    alert('LocalStorage temizlendi. Sayfa yenilenecek.');
+                    location.reload();
+                }
+            });
+        }
+
+        // Handle login
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+
+            // Validate input
+            if (!username) {
+                errorDiv.textContent = 'Lütfen kullanıcı adınızı giriniz!';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            if (!password) {
+                errorDiv.textContent = 'Lütfen şifrenizi giriniz!';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Get users from localStorage
+            let users = {};
+            try {
+                const usersData = localStorage.getItem('users');
+                users = usersData ? JSON.parse(usersData) : {};
+                console.log('LocalStorage\'dan okunan kullanıcılar:', Object.keys(users));
+            } catch (error) {
+                console.error('LocalStorage okuma hatası:', error);
+                errorDiv.textContent = 'Bir hata oluştu. Lütfen sayfayı yenileyin.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Check if user exists
+            if (!users[username]) {
+                console.log('Kullanıcı bulunamadı:', username);
+                console.log('Mevcut kullanıcılar:', Object.keys(users));
+                errorDiv.textContent = 'Kullanıcı adı bulunamadı! Lütfen önce kayıt olun.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Check if password matches
+            console.log('Şifre karşılaştırması - Girilen:', password, 'Kayıtlı:', users[username].password);
+            if (users[username].password !== password) {
+                errorDiv.textContent = 'Şifre hatalı!';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Login successful
+            currentUser = username;
+            localStorage.setItem('currentUser', username);
+            errorDiv.style.display = 'none';
+            showMainScreen();
+            loadUserData();
+            // Clear form
+            document.getElementById('loginForm').reset();
+        }
+
+        // Handle register
+        function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const errorDiv = document.getElementById('registerError');
+            const successDiv = document.getElementById('registerSuccess');
+
+            // Validate username
+            if (!username) {
+                errorDiv.textContent = 'Lütfen kullanıcı adınızı giriniz!';
+                errorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+                return;
+            }
+
+            if (username.length < 3) {
+                errorDiv.textContent = 'Kullanıcı adı en az 3 karakter olmalıdır!';
+                errorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+                return;
+            }
+
+            // Validate password
+            if (!password) {
+                errorDiv.textContent = 'Lütfen şifrenizi giriniz!';
+                errorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+                return;
+            }
+
+            if (password.length < 3) {
+                errorDiv.textContent = 'Şifre en az 3 karakter olmalıdır!';
+                errorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+                return;
+            }
+
+            // Get users from localStorage
+            let users = {};
+            try {
+                const usersData = localStorage.getItem('users');
+                users = usersData ? JSON.parse(usersData) : {};
+            } catch (error) {
+                console.error('LocalStorage okuma hatası:', error);
+                errorDiv.textContent = 'Bir hata oluştu. Lütfen sayfayı yenileyin.';
+                errorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+                return;
+            }
+
+            // Check if user already exists
+            if (users[username]) {
+                errorDiv.textContent = 'Bu kullanıcı adı zaten kullanılıyor!';
+                errorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+                return;
+            }
+
+            // Create new user
+            users[username] = {
+                password: password,
+                pendingProducts: [],
+                completedProducts: []
+            };
+
+            // Save to localStorage
+            try {
+                localStorage.setItem('users', JSON.stringify(users));
+                console.log('Kullanıcı başarıyla kaydedildi:', username);
+            } catch (error) {
+                console.error('LocalStorage yazma hatası:', error);
+                errorDiv.textContent = 'Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.';
+                errorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+                return;
+            }
+            
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'block';
+            document.getElementById('registerForm').reset();
+            
+            // Auto login after registration
+            setTimeout(() => {
+                currentUser = username;
+                localStorage.setItem('currentUser', username);
+                showMainScreen();
+                loadUserData();
+            }, 500);
+        }
+
+        // Handle logout
+        function handleLogout() {
+            if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
+                localStorage.removeItem('currentUser');
+                currentUser = null;
+                showLoginScreen();
+            }
+        }
+
+        // Handle add product
+        function handleAddProduct(e) {
+            e.preventDefault();
+            const productName = document.getElementById('productName').value.trim();
+
+            if (!productName) {
+                alert('Lütfen ürün adını giriniz!');
+                return;
+            }
+
+            const userData = getUserData();
+            const newProduct = {
+                id: Date.now(),
+                name: productName,
+                actualPrice: null
+            };
+
+            userData.pendingProducts.push(newProduct);
+            saveUserData(userData);
+            renderLists();
+            document.getElementById('addProductForm').reset();
+        }
+
+        // Format date to Turkish format
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+
+        // Format date key (YYYY-MM-DD) to Turkish format (DD.MM.YYYY)
+        function formatDateKey(dateKey) {
+            const [year, month, day] = dateKey.split('-');
+            return `${day}.${month}.${year}`;
+        }
+
+        // Mark product as completed
+        function markAsCompleted(productId) {
+            const actualPrice = prompt('Fiyat giriniz (₺):');
+            
+            if (actualPrice === null) return; // User cancelled
+            
+            const price = parseFloat(actualPrice);
+            if (isNaN(price) || price < 0) {
+                alert('Lütfen geçerli bir fiyat giriniz!');
+                return;
+            }
+
+            const userData = getUserData();
+            const productIndex = userData.pendingProducts.findIndex(p => p.id === productId);
+            
+            if (productIndex !== -1) {
+                const product = userData.pendingProducts[productIndex];
+                product.actualPrice = price;
+                product.purchaseDate = new Date().toISOString(); // Kayıt tarihini ekle
+                
+                userData.pendingProducts.splice(productIndex, 1);
+                userData.completedProducts.push(product);
+                
+                saveUserData(userData);
+                renderLists();
+            }
+        }
+
+        // Delete product
+        function deleteProduct(productId, isCompleted) {
+            if (!confirm('Bu ürünü silmek istediğinize emin misiniz?')) {
+                return;
+            }
+
+            const userData = getUserData();
+            
+            if (isCompleted) {
+                userData.completedProducts = userData.completedProducts.filter(p => p.id !== productId);
+            } else {
+                userData.pendingProducts = userData.pendingProducts.filter(p => p.id !== productId);
+            }
+            
+            saveUserData(userData);
+            renderLists();
+        }
+
+        // Get user data
+        function getUserData() {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            if (!users[currentUser]) {
+                users[currentUser] = {
+                    password: users[currentUser]?.password || '',
+                    pendingProducts: [],
+                    completedProducts: []
+                };
+            }
+            return users[currentUser];
+        }
+
+        // Save user data
+        function saveUserData(userData) {
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            users[currentUser] = userData;
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        // Load user data and render
+        function loadUserData() {
+            renderLists();
+        }
+
+        // Render lists
+        function renderLists() {
+            const userData = getUserData();
+            renderPendingList(userData.pendingProducts);
+            // Sort completed products by date (newest first)
+            const sortedCompleted = [...userData.completedProducts].sort((a, b) => {
+                const dateA = a.purchaseDate ? new Date(a.purchaseDate) : new Date(0);
+                const dateB = b.purchaseDate ? new Date(b.purchaseDate) : new Date(0);
+                return dateB - dateA; // Descending order (newest first)
+            });
+            renderCompletedList(sortedCompleted);
+            calculateTotal(userData.completedProducts);
+            renderDailyExpenses(userData.completedProducts);
+        }
+
+        // Render pending list
+        function renderPendingList(products) {
+            const pendingList = document.getElementById('pendingList');
+            const emptyPending = document.getElementById('emptyPending');
+            
+            pendingList.innerHTML = '';
+            
+            if (products.length === 0) {
+                emptyPending.style.display = 'block';
+            } else {
+                emptyPending.style.display = 'none';
+                products.forEach(product => {
+                    const listItem = document.createElement('div');
+                    listItem.className = 'list-group-item';
+                    listItem.innerHTML = `
+                        <div class="product-item">
+                            <div class="product-info">
+                                <h6 class="mb-0">${escapeHtml(product.name)}</h6>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-success btn-sm" onclick="markAsCompleted(${product.id})">
+                                    <i class="bi bi-check-lg"></i> Alındı
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id}, false)">
+                                    <i class="bi bi-trash"></i> Sil
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    pendingList.appendChild(listItem);
+                });
+            }
+        }
+
+        // Render completed list
+        function renderCompletedList(products) {
+            const completedList = document.getElementById('completedList');
+            const emptyCompleted = document.getElementById('emptyCompleted');
+            
+            completedList.innerHTML = '';
+            
+            if (products.length === 0) {
+                emptyCompleted.style.display = 'block';
+            } else {
+                emptyCompleted.style.display = 'none';
+                products.forEach(product => {
+                    const listItem = document.createElement('div');
+                    listItem.className = 'list-group-item';
+                    const purchaseDate = product.purchaseDate ? formatDate(product.purchaseDate) : 'Tarih bilgisi yok';
+                    
+                    listItem.innerHTML = `
+                        <div class="product-item">
+                            <div class="product-info">
+                                <h6 class="mb-1">${escapeHtml(product.name)}</h6>
+                                <div>
+                                    <strong class="text-primary">Fiyat: ${product.actualPrice.toFixed(2)} ₺</strong>
+                                </div>
+                                <div class="mt-1">
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar3"></i> Alınma Tarihi: ${purchaseDate}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id}, true)">
+                                    <i class="bi bi-trash"></i> Sil
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    completedList.appendChild(listItem);
+                });
+            }
+        }
+
+        // Calculate total
+        function calculateTotal(products) {
+            const total = products.reduce((sum, product) => sum + (product.actualPrice || 0), 0);
+            document.getElementById('totalAmount').textContent = total.toFixed(2) + ' ₺';
+        }
+
+        // Calculate and render daily expenses
+        function renderDailyExpenses(products) {
+            const dailyExpensesDiv = document.getElementById('dailyExpenses');
+            const emptyDailyExpenses = document.getElementById('emptyDailyExpenses');
+            
+            dailyExpensesDiv.innerHTML = '';
+            
+            // Group products by date (using local date for consistent grouping)
+            const dailyExpenses = {};
+            products.forEach(product => {
+                if (product.purchaseDate && product.actualPrice) {
+                    // Extract date part only (YYYY-MM-DD) using local date
+                    const dateObj = new Date(product.purchaseDate);
+                    const year = dateObj.getFullYear();
+                    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                    const day = String(dateObj.getDate()).padStart(2, '0');
+                    const dateKey = `${year}-${month}-${day}`; // YYYY-MM-DD format
+                    
+                    if (!dailyExpenses[dateKey]) {
+                        dailyExpenses[dateKey] = {
+                            total: 0,
+                            count: 0
+                        };
+                    }
+                    dailyExpenses[dateKey].total += product.actualPrice;
+                    dailyExpenses[dateKey].count += 1;
+                }
+            });
+            
+            // Get dates and sort them (newest first)
+            const dates = Object.keys(dailyExpenses).sort((a, b) => {
+                return new Date(b) - new Date(a); // Descending order (newest first)
+            });
+            
+            if (dates.length === 0) {
+                emptyDailyExpenses.style.display = 'block';
+                dailyExpensesDiv.style.display = 'none';
+            } else {
+                emptyDailyExpenses.style.display = 'none';
+                dailyExpensesDiv.style.display = 'block';
+                
+                dates.forEach(dateKey => {
+                    const expense = dailyExpenses[dateKey];
+                    const displayDate = formatDateKey(dateKey);
+                    const listItem = document.createElement('div');
+                    listItem.className = 'list-group-item daily-expense-item';
+                    listItem.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="daily-expense-date">
+                                    <i class="bi bi-calendar-event"></i> ${displayDate}
+                                </div>
+                                <div class="daily-expense-count">
+                                    ${expense.count} ürün alındı
+                                </div>
+                            </div>
+                            <div class="daily-expense-amount">
+                                ${expense.total.toFixed(2)} ₺
+                            </div>
+                        </div>
+                    `;
+                    dailyExpensesDiv.appendChild(listItem);
+                });
+            }
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Make functions globally available for onclick handlers
+        window.markAsCompleted = markAsCompleted;
+        window.deleteProduct = deleteProduct;
+    </script>
+</body>
+</html>
