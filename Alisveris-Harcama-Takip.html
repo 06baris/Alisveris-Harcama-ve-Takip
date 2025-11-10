@@ -85,7 +85,6 @@
     </style>
 </head>
 <body>
-    <!-- Login/Register Screen -->
     <div id="loginScreen" class="login-container">
         <div class="card">
             <div class="card-header text-center">
@@ -101,7 +100,6 @@
                     </li>
                 </ul>
                 <div class="tab-content" id="authTabContent">
-                    <!-- Login Tab -->
                     <div class="tab-pane fade show active" id="login" role="tabpanel">
                         <form id="loginForm">
                             <div class="mb-3">
@@ -123,7 +121,6 @@
                             </small>
                         </div>
                     </div>
-                    <!-- Register Tab -->
                     <div class="tab-pane fade" id="register" role="tabpanel">
                         <form id="registerForm">
                             <div class="mb-3">
@@ -144,7 +141,6 @@
         </div>
     </div>
 
-    <!-- Main Application Screen -->
     <div id="mainScreen" class="main-container container">
         <div class="row mb-4">
             <div class="col-12">
@@ -159,7 +155,6 @@
             </div>
         </div>
 
-        <!-- Add Product Form -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card">
@@ -182,7 +177,6 @@
         </div>
 
         <div class="row">
-            <!-- Alınacaklar Listesi -->
             <div class="col-md-6 mb-4">
                 <div class="card">
                     <div class="card-header">
@@ -190,7 +184,6 @@
                     </div>
                     <div class="card-body">
                         <div id="pendingList" class="list-group">
-                            <!-- Pending items will be added here -->
                         </div>
                         <div id="emptyPending" class="text-center text-muted mt-3" style="display: none;">
                             <i class="bi bi-inbox" style="font-size: 3rem;"></i>
@@ -200,7 +193,6 @@
                 </div>
             </div>
 
-            <!-- Alınmışlar Listesi -->
             <div class="col-md-6 mb-4">
                 <div class="card">
                     <div class="card-header">
@@ -208,7 +200,6 @@
                     </div>
                     <div class="card-body">
                         <div id="completedList" class="list-group">
-                            <!-- Completed items will be added here -->
                         </div>
                         <div id="emptyCompleted" class="text-center text-muted mt-3" style="display: none;">
                             <i class="bi bi-inbox" style="font-size: 3rem;"></i>
@@ -223,7 +214,6 @@
                         <div class="mt-3">
                             <h6 class="mb-3"><i class="bi bi-calendar-check"></i> Günlük Harcama Özeti</h6>
                             <div id="dailyExpenses" class="list-group">
-                                <!-- Daily expenses will be added here -->
                             </div>
                             <div id="emptyDailyExpenses" class="text-center text-muted mt-3" style="display: none;">
                                 <small>Henüz günlük harcama kaydı yok</small>
@@ -235,20 +225,16 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Application State
         let currentUser = null;
 
-        // Initialize App
         document.addEventListener('DOMContentLoaded', function() {
             checkLoginStatus();
             setupEventListeners();
         });
 
-        // Check if user is logged in
         function checkLoginStatus() {
             const loggedInUser = localStorage.getItem('currentUser');
             if (loggedInUser) {
@@ -260,34 +246,26 @@
             }
         }
 
-        // Show login screen
         function showLoginScreen() {
             document.getElementById('loginScreen').style.display = 'block';
             document.getElementById('mainScreen').style.display = 'none';
         }
 
-        // Show main screen
         function showMainScreen() {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainScreen').style.display = 'block';
             document.getElementById('currentUsername').textContent = currentUser;
         }
 
-        // Setup event listeners
         function setupEventListeners() {
-            // Login form
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             
-            // Register form
             document.getElementById('registerForm').addEventListener('submit', handleRegister);
             
-            // Logout button
             document.getElementById('logoutBtn').addEventListener('click', handleLogout);
             
-            // Add product form
             document.getElementById('addProductForm').addEventListener('submit', handleAddProduct);
             
-            // Clear storage link
             document.getElementById('clearStorageLink').addEventListener('click', function(e) {
                 e.preventDefault();
                 if (confirm('Tüm kullanıcı verilerini silmek istediğinize emin misiniz? Bu işlem geri alınamaz!')) {
@@ -298,14 +276,12 @@
             });
         }
 
-        // Handle login
         function handleLogin(e) {
             e.preventDefault();
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
             const errorDiv = document.getElementById('loginError');
 
-            // Validate input
             if (!username) {
                 errorDiv.textContent = 'Lütfen kullanıcı adınızı giriniz!';
                 errorDiv.style.display = 'block';
@@ -318,7 +294,6 @@
                 return;
             }
 
-            // Get users from localStorage
             let users = {};
             try {
                 const usersData = localStorage.getItem('users');
@@ -331,7 +306,6 @@
                 return;
             }
 
-            // Check if user exists
             if (!users[username]) {
                 console.log('Kullanıcı bulunamadı:', username);
                 console.log('Mevcut kullanıcılar:', Object.keys(users));
@@ -340,7 +314,6 @@
                 return;
             }
 
-            // Check if password matches
             console.log('Şifre karşılaştırması - Girilen:', password, 'Kayıtlı:', users[username].password);
             if (users[username].password !== password) {
                 errorDiv.textContent = 'Şifre hatalı!';
@@ -348,17 +321,14 @@
                 return;
             }
 
-            // Login successful
             currentUser = username;
             localStorage.setItem('currentUser', username);
             errorDiv.style.display = 'none';
             showMainScreen();
             loadUserData();
-            // Clear form
             document.getElementById('loginForm').reset();
         }
 
-        // Handle register
         function handleRegister(e) {
             e.preventDefault();
             const username = document.getElementById('registerUsername').value.trim();
@@ -366,7 +336,6 @@
             const errorDiv = document.getElementById('registerError');
             const successDiv = document.getElementById('registerSuccess');
 
-            // Validate username
             if (!username) {
                 errorDiv.textContent = 'Lütfen kullanıcı adınızı giriniz!';
                 errorDiv.style.display = 'block';
@@ -381,7 +350,6 @@
                 return;
             }
 
-            // Validate password
             if (!password) {
                 errorDiv.textContent = 'Lütfen şifrenizi giriniz!';
                 errorDiv.style.display = 'block';
@@ -396,7 +364,6 @@
                 return;
             }
 
-            // Get users from localStorage
             let users = {};
             try {
                 const usersData = localStorage.getItem('users');
@@ -409,7 +376,6 @@
                 return;
             }
 
-            // Check if user already exists
             if (users[username]) {
                 errorDiv.textContent = 'Bu kullanıcı adı zaten kullanılıyor!';
                 errorDiv.style.display = 'block';
@@ -417,14 +383,12 @@
                 return;
             }
 
-            // Create new user
             users[username] = {
                 password: password,
                 pendingProducts: [],
                 completedProducts: []
             };
 
-            // Save to localStorage
             try {
                 localStorage.setItem('users', JSON.stringify(users));
                 console.log('Kullanıcı başarıyla kaydedildi:', username);
@@ -440,7 +404,6 @@
             successDiv.style.display = 'block';
             document.getElementById('registerForm').reset();
             
-            // Auto login after registration
             setTimeout(() => {
                 currentUser = username;
                 localStorage.setItem('currentUser', username);
@@ -449,7 +412,6 @@
             }, 500);
         }
 
-        // Handle logout
         function handleLogout() {
             if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
                 localStorage.removeItem('currentUser');
@@ -458,7 +420,6 @@
             }
         }
 
-        // Handle add product
         function handleAddProduct(e) {
             e.preventDefault();
             const productName = document.getElementById('productName').value.trim();
@@ -481,7 +442,6 @@
             document.getElementById('addProductForm').reset();
         }
 
-        // Format date to Turkish format
         function formatDate(dateString) {
             const date = new Date(dateString);
             const day = String(date.getDate()).padStart(2, '0');
@@ -490,17 +450,15 @@
             return `${day}.${month}.${year}`;
         }
 
-        // Format date key (YYYY-MM-DD) to Turkish format (DD.MM.YYYY)
         function formatDateKey(dateKey) {
             const [year, month, day] = dateKey.split('-');
             return `${day}.${month}.${year}`;
         }
 
-        // Mark product as completed
         function markAsCompleted(productId) {
             const actualPrice = prompt('Fiyat giriniz (₺):');
             
-            if (actualPrice === null) return; // User cancelled
+            if (actualPrice === null) return;
             
             const price = parseFloat(actualPrice);
             if (isNaN(price) || price < 0) {
@@ -514,7 +472,7 @@
             if (productIndex !== -1) {
                 const product = userData.pendingProducts[productIndex];
                 product.actualPrice = price;
-                product.purchaseDate = new Date().toISOString(); // Kayıt tarihini ekle
+                product.purchaseDate = new Date().toISOString();
                 
                 userData.pendingProducts.splice(productIndex, 1);
                 userData.completedProducts.push(product);
@@ -524,7 +482,6 @@
             }
         }
 
-        // Delete product
         function deleteProduct(productId, isCompleted) {
             if (!confirm('Bu ürünü silmek istediğinize emin misiniz?')) {
                 return;
@@ -542,7 +499,6 @@
             renderLists();
         }
 
-        // Get user data
         function getUserData() {
             const users = JSON.parse(localStorage.getItem('users') || '{}');
             if (!users[currentUser]) {
@@ -555,34 +511,29 @@
             return users[currentUser];
         }
 
-        // Save user data
         function saveUserData(userData) {
             const users = JSON.parse(localStorage.getItem('users') || '{}');
             users[currentUser] = userData;
             localStorage.setItem('users', JSON.stringify(users));
         }
 
-        // Load user data and render
         function loadUserData() {
             renderLists();
         }
 
-        // Render lists
         function renderLists() {
             const userData = getUserData();
             renderPendingList(userData.pendingProducts);
-            // Sort completed products by date (newest first)
             const sortedCompleted = [...userData.completedProducts].sort((a, b) => {
                 const dateA = a.purchaseDate ? new Date(a.purchaseDate) : new Date(0);
                 const dateB = b.purchaseDate ? new Date(b.purchaseDate) : new Date(0);
-                return dateB - dateA; // Descending order (newest first)
+                return dateB - dateA;
             });
             renderCompletedList(sortedCompleted);
             calculateTotal(userData.completedProducts);
             renderDailyExpenses(userData.completedProducts);
         }
 
-        // Render pending list
         function renderPendingList(products) {
             const pendingList = document.getElementById('pendingList');
             const emptyPending = document.getElementById('emptyPending');
@@ -616,7 +567,6 @@
             }
         }
 
-        // Render completed list
         function renderCompletedList(products) {
             const completedList = document.getElementById('completedList');
             const emptyCompleted = document.getElementById('emptyCompleted');
@@ -657,29 +607,25 @@
             }
         }
 
-        // Calculate total
         function calculateTotal(products) {
             const total = products.reduce((sum, product) => sum + (product.actualPrice || 0), 0);
             document.getElementById('totalAmount').textContent = total.toFixed(2) + ' ₺';
         }
 
-        // Calculate and render daily expenses
         function renderDailyExpenses(products) {
             const dailyExpensesDiv = document.getElementById('dailyExpenses');
             const emptyDailyExpenses = document.getElementById('emptyDailyExpenses');
             
             dailyExpensesDiv.innerHTML = '';
             
-            // Group products by date (using local date for consistent grouping)
             const dailyExpenses = {};
             products.forEach(product => {
                 if (product.purchaseDate && product.actualPrice) {
-                    // Extract date part only (YYYY-MM-DD) using local date
                     const dateObj = new Date(product.purchaseDate);
                     const year = dateObj.getFullYear();
                     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
                     const day = String(dateObj.getDate()).padStart(2, '0');
-                    const dateKey = `${year}-${month}-${day}`; // YYYY-MM-DD format
+                    const dateKey = `${year}-${month}-${day}`;
                     
                     if (!dailyExpenses[dateKey]) {
                         dailyExpenses[dateKey] = {
@@ -692,9 +638,8 @@
                 }
             });
             
-            // Get dates and sort them (newest first)
             const dates = Object.keys(dailyExpenses).sort((a, b) => {
-                return new Date(b) - new Date(a); // Descending order (newest first)
+                return new Date(b) - new Date(a);
             });
             
             if (dates.length === 0) {
@@ -729,14 +674,12 @@
             }
         }
 
-        // Escape HTML to prevent XSS
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Make functions globally available for onclick handlers
         window.markAsCompleted = markAsCompleted;
         window.deleteProduct = deleteProduct;
     </script>
